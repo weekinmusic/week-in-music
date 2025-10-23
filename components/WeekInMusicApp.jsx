@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Globe, Instagram, Facebook, TikTok, Plus, Trash2, Pencil } from "lucide-react";
+import { Mail, Globe, Instagram, Facebook, Plus, Trash2, Pencil } from "lucide-react";
+import { BrandTiktok as TikTok } from "lucide-react";
 
 export default function WeekInMusicApp() {
   const [events, setEvents] = useState([
