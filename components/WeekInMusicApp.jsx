@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Globe, Instagram, Facebook, Plus, Trash2, Pencil } from "lucide-react";
+import { Mail, Globe, Plus, Trash2, Pencil } from "lucide-react";
 
 export default function WeekInMusicApp() {
   const [events, setEvents] = useState([
@@ -48,9 +48,7 @@ export default function WeekInMusicApp() {
         </div>
         <nav style={{ display: "flex", alignItems: "center", gap: 8, color: "#444" }}>
           <a title="Email"><Mail /></a>
-          <a title="Facebook"><Facebook /></a>
           <a title="Website"><Globe /></a>
-          <a title="Instagram"><Instagram /></a>
         </nav>
       </header>
 
