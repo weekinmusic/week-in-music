@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Mail, Globe, Instagram, Facebook, Plus, Trash2, Pencil } from "lucide-react";
+
 export default function WeekInMusicApp() {
   const [events, setEvents] = useState([
     { id: 1, title: "Acoustic Night: The Rivets", venue: "Bluebird Bar", date: "2025-10-26", time: "19:00", artist: "The Rivets", paid: false },
