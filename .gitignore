@@ -1,10 +1,4 @@
-# dependencies
 /node_modules
-
-# production
 /.next
 /out
-
-# misc
 .DS_Store
-*.local
