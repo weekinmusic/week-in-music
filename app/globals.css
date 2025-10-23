@@ -1,8 +1,6 @@
-```css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Optional: brand tweaks */
 :root { color-scheme: light; }
-```
