@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { Mail, Globe, Instagram, Facebook, Plus, Trash2, Pencil } from "lucide-react";
-import { BrandTiktok as TikTok } from "lucide-react";
-
 export default function WeekInMusicApp() {
   const [events, setEvents] = useState([
     { id: 1, title: "Acoustic Night: The Rivets", venue: "Bluebird Bar", date: "2025-10-26", time: "19:00", artist: "The Rivets", paid: false },
@@ -49,7 +47,6 @@ export default function WeekInMusicApp() {
         </div>
         <nav style={{ display: "flex", alignItems: "center", gap: 8, color: "#444" }}>
           <a title="Email"><Mail /></a>
-          <a title="TikTok"><Tiktok /></a>
           <a title="Facebook"><Facebook /></a>
           <a title="Website"><Globe /></a>
           <a title="Instagram"><Instagram /></a>
