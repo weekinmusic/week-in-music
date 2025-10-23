@@ -1,4 +1,3 @@
-```jsx
 export const metadata = {
   title: "Week in Music",
   description: "Your weekly guide to live music — venues, artists, and the calendar.",
@@ -13,4 +12,3 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-```
