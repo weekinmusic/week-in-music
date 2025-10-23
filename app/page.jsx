@@ -1,4 +1,4 @@
-import WeekInMusicApp from "@/components/WeekInMusicApp";
+import WeekInMusicApp from "../components/WeekInMusicApp";
 
 export default function HomePage() {
   return (
