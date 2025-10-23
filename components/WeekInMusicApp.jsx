@@ -1,4 +1,3 @@
-```jsx
 "use client";
 import { useState } from "react";
 import { Mail, Globe, Instagram, Facebook, Tiktok, Plus, Trash2, Pencil } from "lucide-react";
@@ -117,4 +116,3 @@ export default function WeekInMusicApp() {
     </div>
   );
 }
-```
