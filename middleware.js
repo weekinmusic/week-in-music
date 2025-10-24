@@ -1,33 +1,24 @@
 import { NextResponse } from "next/server";
 
+// Match /admin and /api/week routes
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/week/:path*"],
 };
 
 export function middleware(req) {
-  const auth = req.headers.get("authorization");
-  const USER = process.env.BASIC_AUTH_USER;
-  const PASS = process.env.BASIC_AUTH_PASS;
+  const url = req.nextUrl.clone();
+  const token = req.cookies.get("session-token");
 
-  if (!auth) {
-    return new Response("Auth required", {
-      status: 401,
-      headers: { "WWW-Authenticate": 'Basic realm="Admin Area"' },
-    });
+  // If not logged in and accessing admin, redirect to login
+  if (!token && url.pathname.startsWith("/admin")) {
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
   }
 
-  const [scheme, encoded] = auth.split(" ");
-  if (scheme !== "Basic" || !encoded) {
-    return new Response("Invalid auth", { status: 400 });
+  // For API access, require a valid session token
+  if (!token && url.pathname.startsWith("/api/week")) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
-  const [user, pass] = atob(encoded).split(":");
-  if (user === USER && pass === PASS) {
-    return NextResponse.next();
-  }
-
-  return new Response("Unauthorized", {
-    status: 401,
-    headers: { "WWW-Authenticate": 'Basic realm="Admin Area"' },
-  });
+  return NextResponse.next();
 }
