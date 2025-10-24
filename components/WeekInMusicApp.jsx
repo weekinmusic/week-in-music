@@ -71,7 +71,7 @@ export default function WeekInMusicApp() {
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-wm-leather via-wm-accent to-wm-amber shadow-soft flex items-center justify-center">
             {/* Optional Logo */}
-          import Image from "next/image";
+         import Image from "next/image";
 import { useState } from "react";
 
 function Logo() {
@@ -87,7 +87,7 @@ function Logo() {
           alt="Week in Music"
           width={64}
           height={64}
-          className="w-12 h-12 object- contain rounded-xl"
+          className="w-12 h-12 object-contain rounded-xl"
           priority
           onError={() => setErr(true)}
         />
