@@ -3,9 +3,8 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
-const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-// Format "HH:MM" → "h:MM AM/PM"
 function formatTime(hhmm) {
   if (!hhmm) return "";
   const [h, m] = hhmm.split(":").map(Number);
@@ -14,7 +13,6 @@ function formatTime(hhmm) {
   return `${hr}:${String(m ?? 0).padStart(2, "0")} ${ampm}`;
 }
 
-// Format "YYYY-MM-DD" → "Fri, Oct 31, 2025"
 function formatFullDate(iso) {
   if (!iso) return "";
   const d = new Date(iso + "T00:00:00");
@@ -27,18 +25,15 @@ function formatFullDate(iso) {
 }
 
 export default function WeekInMusicApp({ data, editable = false }) {
-  // Public is read-only; 'editable' is ignored here intentionally.
-  const [selectedDay, setSelectedDay] = useState("Mon");
+  const [selectedDay, setSelectedDay] = useState("Monday");
   const [query, setQuery] = useState("");
 
-  // Count entries per day (for the dropdown labels)
   const dayCounts = useMemo(() => {
     const map = {};
     for (const d of WEEKDAY_LABELS) map[d] = (data?.days?.[d] ?? []).length;
     return map;
   }, [data]);
 
-  // Events for the selected day (filtered by search)
   const eventsForSelected = useMemo(() => {
     const list = data?.days?.[selectedDay] ?? [];
     const q = query.trim().toLowerCase();
@@ -48,18 +43,16 @@ export default function WeekInMusicApp({ data, editable = false }) {
     );
   }, [data, selectedDay, query]);
 
-  // Determine header date for the selected day.
-  // If all entries share a single date, show it in the header; otherwise omit.
   const headerDate = useMemo(() => {
     const list = data?.days?.[selectedDay] ?? [];
     const unique = Array.from(new Set(list.map((e) => e.date).filter(Boolean)));
     if (unique.length === 1) return formatFullDate(unique[0]);
-    return null; // multiple/none -> don't show a possibly confusing date
+    return null;
   }, [data, selectedDay]);
 
   return (
     <div className="space-y-8">
-      {/* Hero */}
+      {/* Header */}
       <div className="rounded-2xl bg-gradient-to-br from-wm-leather via-wm-accent to-wm-amber text-white p-5 shadow-soft">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
@@ -79,7 +72,7 @@ export default function WeekInMusicApp({ data, editable = false }) {
         </div>
       </div>
 
-      {/* Controls: Day dropdown + search */}
+      {/* Day + Search */}
       <div className="bg-white border rounded-2xl shadow-soft p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
           <label className="md:col-span-1 text-sm font-medium">
@@ -88,7 +81,6 @@ export default function WeekInMusicApp({ data, editable = false }) {
               className="mt-1 w-full border rounded-xl px-3 py-2 bg-white"
               value={selectedDay}
               onChange={(e) => setSelectedDay(e.target.value)}
-              aria-label="Choose day of week"
             >
               {WEEKDAY_LABELS.map((d) => (
                 <option key={d} value={d}>
@@ -106,14 +98,13 @@ export default function WeekInMusicApp({ data, editable = false }) {
                 placeholder={`Search ${selectedDay} by venue/artist`}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                aria-label="Search events"
               />
             </label>
           </div>
         </div>
       </div>
 
-      {/* Selected day header (with the date moved up here) */}
+      {/* Day header */}
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-2xl font-bold">{selectedDay}</h2>
@@ -126,22 +117,30 @@ export default function WeekInMusicApp({ data, editable = false }) {
         </div>
       </div>
 
-      {/* Listing: ONLY Venue • Artist • Time */}
+      {/* Listing — ONE LINE STYLE */}
       {eventsForSelected.length === 0 ? (
         <p className="text-sm text-neutral-600">No shows for {selectedDay}.</p>
       ) : (
-        <ul className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <ul className="bg-white border rounded-2xl shadow-soft divide-y divide-neutral-200">
           {eventsForSelected.map((ev, i) => (
-            <li key={`${ev.venue}-${ev.artist}-${ev.time}-${i}`} className="bg-white border rounded-2xl shadow-soft p-4">
-              <div className="font-semibold">{ev.venue}</div>
-              <div className="text-sm text-neutral-600">{ev.artist || "Artist TBA"}</div>
-              <div className="text-sm mt-1">{formatTime(ev.time)}</div>
+            <li key={`${ev.venue}-${ev.artist}-${i}`} className="px-4 py-3 flex justify-between items-center">
+              <span className="text-base font-medium text-wm-ink">
+                {ev.venue}
+              </span>
+              <span className="flex-1 text-sm text-neutral-700 text-center">
+                {ev.artist || "Artist TBA"}
+              </span>
+              <span className="text-sm font-semibold text-wm-accent">
+                {formatTime(ev.time)}
+              </span>
             </li>
           ))}
         </ul>
       )}
 
-      <footer className="text-sm text-neutral-500">Built with ♥ for local music.</footer>
+      <footer className="text-sm text-neutral-500 text-center">
+        Built with ♥ for local music.
+      </footer>
     </div>
   );
 }
