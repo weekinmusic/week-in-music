@@ -252,6 +252,38 @@ export default function AdminPage() {
       <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Admin — Week in Music</h1>
+              {/* Toolbar */}
+    <div className="flex flex-wrap gap-2 mb-6">
+      <button
+        onClick={copyWeekJson}
+        className="px-3 py-2 rounded-xl border bg-white hover:bg-neutral-50"
+      >
+        Copy JSON
+      </button>
+
+      <button
+        onClick={downloadWeekJson}
+        className="px-3 py-2 rounded-xl bg-black text-white hover:opacity-90"
+      >
+        Download week.json
+      </button>
+
+      <button
+        onClick={() =>
+          publishToGitHub(publishToGitHub.msg || "chore: update week.json")
+        }
+        className="px-3 py-2 rounded-xl bg-wm-ink text-white hover:opacity-90"
+      >
+        Publish to GitHub
+      </button>
+
+      <button
+        onClick={handleLogout}
+        className="px-3 py-2 rounded-xl border bg-white hover:bg-neutral-50"
+      >
+        Logout
+      </button>
+    </div>
           <p className="text-sm text-neutral-600">
             Edit the weekly lineup privately. Then{" "}
             <strong>Download week.json</strong> or <strong>Copy JSON</strong> and
