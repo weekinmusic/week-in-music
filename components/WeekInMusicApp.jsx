@@ -3,7 +3,16 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
-const WEEKDAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+// ✅ Full day names
+const WEEKDAY_LABELS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 function formatTime(hhmm) {
   if (!hhmm) return "";
@@ -24,25 +33,30 @@ function formatFullDate(iso) {
   });
 }
 
-export default function WeekInMusicApp({ data, editable = false }) {
+export default function WeekInMusicApp({ data }) {
   const [selectedDay, setSelectedDay] = useState("Monday");
   const [query, setQuery] = useState("");
 
+  // Counts per day
   const dayCounts = useMemo(() => {
     const map = {};
     for (const d of WEEKDAY_LABELS) map[d] = (data?.days?.[d] ?? []).length;
     return map;
   }, [data]);
 
+  // Filtered events for selected day
   const eventsForSelected = useMemo(() => {
     const list = data?.days?.[selectedDay] ?? [];
     const q = query.trim().toLowerCase();
     if (!q) return list;
     return list.filter((e) =>
-      [e.venue, e.artist, e.title].filter(Boolean).some((v) => v.toLowerCase().includes(q))
+      [e.venue, e.artist, e.title]
+        .filter(Boolean)
+        .some((v) => v.toLowerCase().includes(q))
     );
   }, [data, selectedDay, query]);
 
+  // Determine date to show under day name
   const headerDate = useMemo(() => {
     const list = data?.days?.[selectedDay] ?? [];
     const unique = Array.from(new Set(list.map((e) => e.date).filter(Boolean)));
@@ -117,19 +131,37 @@ export default function WeekInMusicApp({ data, editable = false }) {
         </div>
       </div>
 
-      {/* Listing — ONE LINE STYLE */}
+      {/* Listings — one line, clickable venue */}
       {eventsForSelected.length === 0 ? (
         <p className="text-sm text-neutral-600">No shows for {selectedDay}.</p>
       ) : (
         <ul className="bg-white border rounded-2xl shadow-soft divide-y divide-neutral-200">
           {eventsForSelected.map((ev, i) => (
-            <li key={`${ev.venue}-${ev.artist}-${i}`} className="px-4 py-3 flex justify-between items-center">
-              <span className="text-base font-medium text-wm-ink">
-                {ev.venue}
-              </span>
-              <span className="flex-1 text-sm text-neutral-700 text-center">
+            <li
+              key={`${ev.venue}-${ev.artist}-${i}`}
+              className="px-4 py-3 flex justify-between items-center"
+            >
+              {/* Venue (clickable link if venueUrl exists) */}
+              {ev.venueUrl ? (
+                <a
+                  href={ev.venueUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-base font-bold text-wm-ink hover:text-wm-accent transition"
+                  title={`Visit ${ev.venue}`}
+                >
+                  {ev.venue}
+                </a>
+              ) : (
+                <span className="text-base font-bold text-wm-ink">{ev.venue}</span>
+              )}
+
+              {/* Artist */}
+              <span className="flex-1 text-sm text-neutral-700 text-center truncate">
                 {ev.artist || "Artist TBA"}
               </span>
+
+              {/* Time */}
               <span className="text-sm font-semibold text-wm-accent">
                 {formatTime(ev.time)}
               </span>
