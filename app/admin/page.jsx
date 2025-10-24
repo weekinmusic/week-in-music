@@ -25,6 +25,52 @@ function formatTime(hhmm) {
   return `${hr}:${String(m ?? 0).padStart(2, "0")} ${ampm}`;
 }
 
+// Tiny CSV parser that handles quoted fields with commas.
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const nxt = text[i + 1];
+
+    if (inQuotes) {
+      if (ch === '"' && nxt === '"') {
+        field += '"'; i++; // escaped quote
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        field += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ",") {
+        row.push(field.trim());
+        field = "";
+      } else if (ch === "\n" || ch === "\r") {
+        // end of row (support \r\n)
+        if (field.length || row.length) {
+          row.push(field.trim());
+          rows.push(row);
+          row = [];
+          field = "";
+        }
+        // skip \r\n combo by letting loop continue
+      } else {
+        field += ch;
+      }
+    }
+  }
+  if (field.length || row.length) {
+    row.push(field.trim());
+    rows.push(row);
+  }
+  return rows;
+}
+
 export default function AdminPage() {
   // Normalize incoming data to full-day keys with arrays
   const normalized = useMemo(() => {
@@ -41,6 +87,8 @@ export default function AdminPage() {
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
   const [newEv, setNewEv] = useState(emptyEvent());
   const [search, setSearch] = useState("");
+  const [importMode, setImportMode] = useState("append"); // "append" | "replace"
+  const [importStatus, setImportStatus] = useState("");
 
   const list = useMemo(() => {
     const base = data.days[selectedDay] || [];
@@ -100,6 +148,93 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   }
 
+  async function copyWeekJson() {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+      setImportStatus("Copied JSON to clipboard.");
+      setTimeout(() => setImportStatus(""), 2000);
+    } catch {
+      setImportStatus("Copy failed. Your browser may block clipboard access.");
+      setTimeout(() => setImportStatus(""), 3000);
+    }
+  }
+
+  function downloadCsvTemplate() {
+    const header = ["venue", "venueUrl", "artist", "date", "time"].join(",");
+    const example = [
+      "Bluebird Bar,https://bluebirdbar.com,The Rivets,2025-10-31,19:00",
+      "Ivory Lounge,https://ivoryloungedfw.com,Kip Richard Trio,2025-10-31,21:30",
+    ].join("\n");
+    const file = new Blob([header + "\n" + example], { type: "text/csv" });
+    const url = URL.createObjectURL(file);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `week-template-${selectedDay}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function onCsvSelected(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = reader.result.toString();
+        const rows = parseCSV(text);
+        if (!rows.length) throw new Error("No rows found.");
+
+        // Expect header: venue,venueUrl,artist,date,time (any order acceptable)
+        const header = rows[0].map((h) => h.toLowerCase().trim());
+        const idxVenue = header.indexOf("venue");
+        const idxVenueUrl = header.indexOf("venueurl");
+        const idxArtist = header.indexOf("artist");
+        const idxDate = header.indexOf("date");
+        const idxTime = header.indexOf("time");
+
+        if (idxVenue === -1 || idxDate === -1 || idxTime === -1) {
+          throw new Error(
+            'CSV must have at least "venue", "date", and "time" columns.'
+          );
+        }
+
+        const newItems = [];
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r || r.length === 0) continue;
+          const venue = r[idxVenue] || "";
+          const venueUrl = idxVenueUrl !== -1 ? r[idxVenueUrl] || "" : "";
+          const artist = idxArtist !== -1 ? r[idxArtist] || "" : "";
+          const date = r[idxDate] || "";
+          const time = r[idxTime] || "";
+          if (!venue && !date && !time) continue; // skip empty lines
+          newItems.push({ venue, venueUrl, artist, date, time });
+        }
+
+        if (!newItems.length) throw new Error("No valid rows to import.");
+
+        setData((prev) => {
+          const copy = { ...prev.days };
+          copy[selectedDay] =
+            importMode === "replace"
+              ? newItems
+              : [...newItems, ...(copy[selectedDay] || [])];
+          return { days: copy };
+        });
+
+        setImportStatus(
+          `Imported ${newItems.length} item(s) into ${selectedDay} (${importMode}).`
+        );
+        setTimeout(() => setImportStatus(""), 4000);
+      } catch (e) {
+        setImportStatus(`Import error: ${e.message}`);
+        setTimeout(() => setImportStatus(""), 5000);
+      }
+    };
+    reader.readAsText(file);
+  }
+
   const totalCount = useMemo(
     () => DAYS.reduce((sum, d) => sum + (data.days[d]?.length || 0), 0),
     [data]
@@ -111,20 +246,28 @@ export default function AdminPage() {
         <div>
           <h1 className="text-2xl font-bold">Admin — Week in Music</h1>
           <p className="text-sm text-neutral-600">
-            Edit the weekly lineup privately. When done, click{" "}
-            <strong>Download week.json</strong> and commit it to{" "}
-            <code>data/week.json</code> in GitHub.
+            Edit the weekly lineup privately. Then{" "}
+            <strong>Download week.json</strong> or <strong>Copy JSON</strong> and
+            commit it to <code>data/week.json</code> in GitHub.
           </p>
         </div>
-        <button
-          onClick={downloadWeekJson}
-          className="px-3 py-2 rounded-xl bg-black text-white hover:opacity-90"
-        >
-          Download week.json
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={copyWeekJson}
+            className="px-3 py-2 rounded-xl border bg-white hover:bg-neutral-50"
+          >
+            Copy JSON
+          </button>
+          <button
+            onClick={downloadWeekJson}
+            className="px-3 py-2 rounded-xl bg-black text-white hover:opacity-90"
+          >
+            Download week.json
+          </button>
+        </div>
       </header>
 
-      {/* Controls */}
+      {/* Day + Search */}
       <section className="bg-white border rounded-2xl shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <label className="text-sm font-medium">
@@ -152,6 +295,55 @@ export default function AdminPage() {
             />
           </label>
         </div>
+      </section>
+
+      {/* CSV Import */}
+      <section className="bg-white border rounded-2xl shadow p-4">
+        <div className="flex flex-col lg:flex-row lg:items-end gap-3">
+          <div className="flex-1">
+            <label className="text-sm font-medium block">
+              Import CSV into <strong>{selectedDay}</strong>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                className="mt-1 block w-full border rounded-xl px-3 py-2 bg-white"
+                onChange={(e) => onCsvSelected(e.target.files?.[0] || null)}
+              />
+            </label>
+            <p className="text-xs text-neutral-600 mt-1">
+              Expected columns (any order): <code>venue</code>,{" "}
+              <code>venueUrl</code>, <code>artist</code>, <code>date</code>,{" "}
+              <code>time</code>. Date format: <code>YYYY-MM-DD</code>. Time:
+              <code>HH:MM</code>.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium">
+              Mode
+              <select
+                className="mt-1 ml-2 border rounded-xl px-3 py-2 bg-white"
+                value={importMode}
+                onChange={(e) => setImportMode(e.target.value)}
+              >
+                <option value="append">Append</option>
+                <option value="replace">Replace</option>
+              </select>
+            </label>
+
+            <button
+              onClick={downloadCsvTemplate}
+              className="px-3 py-2 rounded-xl border bg-white hover:bg-neutral-50"
+              type="button"
+            >
+              CSV Template
+            </button>
+          </div>
+        </div>
+
+        {importStatus && (
+          <div className="mt-3 text-sm text-neutral-700">{importStatus}</div>
+        )}
       </section>
 
       {/* Add Event */}
@@ -208,7 +400,8 @@ export default function AdminPage() {
             {selectedDay} — {list.length} show{list.length === 1 ? "" : "s"}
           </h3>
           <div className="text-sm text-neutral-600">
-            Total this week: {totalCount}
+            Total this week:{" "}
+            {DAYS.reduce((sum, d) => sum + (data.days[d]?.length || 0), 0)}
           </div>
         </div>
 
@@ -259,8 +452,9 @@ export default function AdminPage() {
                 </div>
 
                 <div className="mt-2 text-sm text-neutral-600">
-                  Preview: {ev.venue || "Venue"} — {ev.artist || "Artist TBA"} —{" "}
-                  {formatTime(ev.time || "")} {ev.date ? `• ${ev.date}` : ""}
+                  Preview: <strong>{ev.venue || "Venue"}</strong> —{" "}
+                  {ev.artist || "Artist TBA"} — {formatTime(ev.time || "")}{" "}
+                  {ev.date ? `• ${ev.date}` : ""}
                 </div>
 
                 <div className="mt-2">
@@ -284,8 +478,9 @@ export default function AdminPage() {
 {JSON.stringify(data, null, 2)}
         </pre>
         <p className="text-sm text-neutral-600 mt-2">
-          Click “Download week.json”, then upload/commit it to{" "}
-          <code>data/week.json</code> in GitHub to publish.
+          Use <strong>Copy JSON</strong> to paste directly into GitHub, or{" "}
+          <strong>Download week.json</strong> and upload it to{" "}
+          <code>data/week.json</code>.
         </p>
       </section>
     </main>
