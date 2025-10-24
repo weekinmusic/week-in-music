@@ -1,113 +1,181 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+const WEEKDAY_LABELS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+// Helper: parse and format times
+function toWeekIndex(dateStr) {
+  // 0 = Monday ... 6 = Sunday
+  const d = new Date(dateStr + "T00:00:00");
+  // JS getDay(): 0=Sun ... 6=Sat. We want Mon=0..Sun=6
+  const js = d.getDay(); // 0..6
+  return js === 0 ? 6 : js - 1;
+}
+
+function formatTime(hhmm) {
+  if (!hhmm) return "";
+  const [h, m] = hhmm.split(":").map(Number);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const hr = ((h + 11) % 12) + 1;
+  return `${hr}:${String(m ?? 0).padStart(2, "0")} ${ampm}`;
+}
 
 export default function WeekInMusicApp() {
+  // Sample seed data — replace with your real shows
   const [events, setEvents] = useState([
-    { id: 1, title: "Acoustic Night: The Rivets", venue: "Bluebird Bar", date: "2025-10-26", time: "19:00", artist: "The Rivets", paid: false },
-    { id: 2, title: "Open Mic", venue: "The Garage", date: "2025-10-28", time: "20:00", artist: "Open Stage", paid: true }
+    { id: 1, title: "Acoustic Night", venue: "Bluebird Bar", artist: "The Rivets", date: "2025-10-27", time: "19:00", paid: false }, // Mon
+    { id: 2, title: "Open Mic", venue: "The Garage", artist: "House Band", date: "2025-10-29", time: "20:00", paid: true },        // Wed
+    { id: 3, title: "Friday Jazz", venue: "Ivory Lounge", artist: "Kip Richard Trio", date: "2025-10-31", time: "21:30", paid: true }, // Fri
   ]);
 
-  const [form, setForm] = useState({ title: "", venue: "", date: "", time: "", artist: "" });
+  const [form, setForm] = useState({ title: "", venue: "", artist: "", date: "", time: "" });
   const [query, setQuery] = useState("");
 
   const addEvent = () => {
-    if (!form.title || !form.date) return;
+    if (!form.title || !form.venue || !form.date) return;
     const next = { ...form, id: Date.now(), paid: false };
     setEvents((s) => [next, ...s]);
-    setForm({ title: "", venue: "", date: "", time: "", artist: "" });
+    setForm({ title: "", venue: "", artist: "", date: "", time: "" });
   };
 
-  const togglePaid = (id) => setEvents((s) => s.map((e) => (e.id === id ? { ...e, paid: !e.paid } : e)));
-  const removeEvent = (id) => setEvents((s) => s.filter((e) => e.id !== id));
+  const togglePaid = (id) => setEvents((s) => s.map(e => e.id === id ? { ...e, paid: !e.paid } : e));
+  const removeEvent = (id) => setEvents((s) => s.filter(e => e.id !== id));
 
-  const filtered = events.filter((e) => {
-    const q = query.toLowerCase();
-    return e.title.toLowerCase().includes(q) || e.venue.toLowerCase().includes(q) || e.artist.toLowerCase().includes(q);
-  });
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return events;
+    return events.filter(e =>
+      [e.title, e.venue, e.artist].some(v => (v || "").toLowerCase().includes(q))
+    );
+  }, [events, query]);
+
+  // Group by weekday Mon..Sun
+  const grouped = useMemo(() => {
+    const buckets = Array.from({ length: 7 }, () => []);
+    for (const ev of filtered) {
+      const idx = toWeekIndex(ev.date);
+      if (idx >= 0 && idx <= 6) buckets[idx].push(ev);
+    }
+    // Sort each day by time
+    for (const day of buckets) {
+      day.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+    }
+    return buckets;
+  }, [filtered]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <header className="flex items-center justify-between gap-4">
+      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 bg-gradient-to-br from-amber-900 via-amber-700 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg text-white text-2xl font-extrabold">
-            W/M
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-wm-leather via-wm-accent to-wm-amber shadow-soft flex items-center justify-center">
+            {/* Optional Logo */}
+            <img
+              src="/logo.png"
+              alt="Week in Music"
+              className="w-12 h-12 object-contain hidden sm:block"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+            <span className="text-white font-extrabold text-xl sm:text-2xl sm:hidden">W/M</span>
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold">Week in Music</h1>
-            <p className="text-sm text-neutral-600">Your weekly guide to live music — venues, artists, and the calendar</p>
+            <h1 className="text-3xl font-extrabold text-wm-ink">Week in Music</h1>
+            <p className="text-sm text-neutral-600">Your weekly guide to live music — venues, artists, and times</p>
           </div>
+        </div>
+
+        {/* Search */}
+        <div className="w-full sm:w-80">
+          <input
+            className="w-full border rounded-xl px-3 py-2 bg-white"
+            placeholder="Search by venue, artist, or title"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
       </header>
 
-      {/* Main grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column */}
-        <aside className="lg:col-span-1 space-y-4">
-          <div className="bg-white border rounded-2xl shadow p-4">
+        {/* Left: Add Event + Tips */}
+        <aside className="space-y-4">
+          <section className="bg-white border rounded-2xl shadow-soft p-4">
             <h3 className="text-lg font-semibold mb-3">Add Event</h3>
             <div className="space-y-3">
               <input className="w-full border rounded-xl px-3 py-2" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
               <input className="w-full border rounded-xl px-3 py-2" placeholder="Venue" value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} />
-              <input className="w-full border rounded-xl px-3 py-2" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-              <input className="w-full border rounded-xl px-3 py-2" placeholder="Time (HH:MM)" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
               <input className="w-full border rounded-xl px-3 py-2" placeholder="Artist" value={form.artist} onChange={(e) => setForm({ ...form, artist: e.target.value })} />
+              <div className="grid grid-cols-2 gap-2">
+                <input className="border rounded-xl px-3 py-2" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+                <input className="border rounded-xl px-3 py-2" placeholder="Time (HH:MM)" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
+              </div>
               <div className="flex gap-2">
-                <button onClick={addEvent} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-black text-white hover:opacity-90">Add</button>
-                <button onClick={() => alert('Import CSV (not implemented)')} className="px-3 py-2 rounded-xl border">Import</button>
+                <button onClick={addEvent} className="px-3 py-2 rounded-xl bg-wm-ink text-white hover:opacity-90">Add</button>
+                <button onClick={() => alert('Import CSV (not implemented)')} className="px-3 py-2 rounded-xl border bg-white">Import</button>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="bg-white border rounded-2xl shadow p-4">
-            <h3 className="text-lg font-semibold mb-2">Search</h3>
-            <input className="w-full border rounded-xl px-3 py-2" placeholder="Search events, artist or venue" value={query} onChange={(e) => setQuery(e.target.value)} />
-            <p className="text-sm mt-2 text-neutral-500">Tip: try venue or artist names to filter.</p>
-          </div>
-
-          <div className="bg-white border rounded-2xl shadow p-4">
-            <h3 className="text-lg font-semibold mb-2">Quick Actions</h3>
-            <div className="flex flex-col gap-2">
-              <button onClick={() => alert('Export CSV (not implemented)')} className="px-3 py-2 rounded-xl border text-left">Export CSV</button>
-              <button onClick={() => alert('Billing flow (not implemented)')} className="px-3 py-2 rounded-xl border text-left">Manage Venue Billing</button>
-            </div>
-          </div>
+          <section className="bg-white border rounded-2xl shadow-soft p-4">
+            <h3 className="text-lg font-semibold mb-2">Quick Tips</h3>
+            <ul className="text-sm text-neutral-600 list-disc pl-5 space-y-1">
+              <li>Use the search to filter by venue, artist, or event name.</li>
+              <li>Add your logo at <code>/public/logo.png</code>.</li>
+              <li>Colors are configured in <code>tailwind.config.js</code> under <code>colors.wm.*</code>.</li>
+            </ul>
+          </section>
         </aside>
 
-        {/* Right column */}
+        {/* Right: Week grid */}
         <section className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Upcoming This Week</h2>
-            <div className="text-sm text-neutral-600">{events.length} events</div>
+            <h2 className="text-2xl font-bold">This Week</h2>
+            <div className="text-sm text-neutral-600">{filtered.length} event{filtered.length === 1 ? "" : "s"}</div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            {filtered.map((ev) => (
-              <article key={ev.id} className="bg-white border rounded-2xl shadow p-4">
-                <div className="flex justify-between items-start gap-3">
-                  <div>
-                    <h3 className="text-lg font-semibold">{ev.title}</h3>
-                    <p className="text-sm text-neutral-600">{ev.artist} • {ev.venue}</p>
-                    <p className="text-sm mt-2">{ev.date} • {ev.time}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${ev.paid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {ev.paid ? 'Paid' : 'Unpaid'}
-                    </span>
-                    <div className="flex gap-2">
-                      <button title="Toggle Paid" onClick={() => togglePaid(ev.id)} className="p-2 rounded-lg border">Edit</button>
-                      <button title="Delete" onClick={() => removeEvent(ev.id)} className="p-2 rounded-lg border">Delete</button>
-                    </div>
-                  </div>
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {WEEKDAY_LABELS.map((label, idx) => (
+              <div key={label} className="bg-white border rounded-2xl shadow-soft p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold">{label}</h3>
+                  <span className="text-xs px-2 py-1 rounded-full bg-neutral-100 text-neutral-700">
+                    {grouped[idx].length} show{grouped[idx].length === 1 ? "" : "s"}
+                  </span>
                 </div>
-              </article>
+
+                {grouped[idx].length === 0 ? (
+                  <p className="text-sm text-neutral-500">No shows yet.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {grouped[idx].map((ev) => (
+                      <li key={ev.id} className="border rounded-xl p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="font-medium">{ev.title}</div>
+                            <div className="text-sm text-neutral-600">{ev.artist || "Artist TBA"} • {ev.venue}</div>
+                            <div className="text-sm mt-1">{ev.date} • {formatTime(ev.time)}</div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`text-xs px-2 py-1 rounded-full ${ev.paid ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+                              {ev.paid ? "Paid" : "Unpaid"}
+                            </span>
+                            <div className="flex gap-2">
+                              <button className="text-xs px-2 py-1 rounded border" onClick={() => togglePaid(ev.id)}>Toggle</button>
+                              <button className="text-xs px-2 py-1 rounded border" onClick={() => removeEvent(ev.id)}>Delete</button>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             ))}
           </div>
         </section>
       </div>
 
-      <footer className="mt-8 text-sm text-neutral-500">Built with ♥ for local music. Export, share, or post your weekly lineups.</footer>
+      <footer className="text-sm text-neutral-500">Built with ♥ for local music. Export, share, or post your weekly lineups.</footer>
     </div>
   );
 }
