@@ -78,16 +78,35 @@ export default function AdminPage() {
     );
   }, [data, selectedDay, search]);
 
-  // ✅ ADD LOGOUT FUNCTION HERE (INSIDE COMPONENT)
+  // ✅ Logout Function
   async function handleLogout() {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
   }
 
-  // Other helper functions like copyWeekJson, downloadWeekJson, publishToGitHub
+  // ✅ Test GitHub Connection
+  async function testGitHubConnection() {
+    try {
+      const res = await fetch("/api/week", { method: "GET" });
+      if (!res.ok) {
+        const text = await res.text();
+        alert(`❌ GitHub connection failed:\n${text}`);
+        return;
+      }
+      const json = await res.json();
+      if (json.days) {
+        alert("✅ GitHub connection successful!");
+      } else {
+        alert("⚠️ GitHub responded but data format unexpected.");
+      }
+    } catch (err) {
+      alert(`❌ Error testing connection: ${err.message}`);
+    }
+  }
+
   async function copyWeekJson() {
     await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    alert("Copied week.json to clipboard");
+    alert("📋 Copied week.json to clipboard");
   }
 
   function downloadWeekJson() {
@@ -118,6 +137,13 @@ export default function AdminPage() {
 
       {/* Toolbar */}
       <div className="flex flex-wrap gap-2 mb-6">
+        <button
+          onClick={testGitHubConnection}
+          className="px-3 py-2 rounded-xl border bg-white hover:bg-neutral-50"
+        >
+          Test GitHub Connection
+        </button>
+
         <button
           onClick={copyWeekJson}
           className="px-3 py-2 rounded-xl border bg-white hover:bg-neutral-50"
