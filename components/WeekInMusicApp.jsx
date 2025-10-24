@@ -20,7 +20,7 @@ function formatTime(hhmm) {
   const hr = ((h + 11) % 12) + 1;
   return `${hr}:${String(m ?? 0).padStart(2, "0")} ${ampm}`;
 }
-
+import Image from "next/image";
 export default function WeekInMusicApp() {
   // Sample seed data — replace with your real shows
   const [events, setEvents] = useState([
