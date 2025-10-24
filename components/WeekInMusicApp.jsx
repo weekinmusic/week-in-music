@@ -87,7 +87,7 @@ function Logo() {
           alt="Week in Music"
           width={64}
           height={64}
-          className="w-14 h-14 object-cover contain rounded-xl"
+          className="w-12 h-12 object- contain rounded-xl"
           priority
           onError={() => setErr(true)}
         />
