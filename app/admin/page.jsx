@@ -80,8 +80,15 @@ export default function AdminPage() {
       const list = src[d];
       days[d] = Array.isArray(list) ? list : [];
     }
-    return { days };
+    async function handleLogout() {
+  await fetch("/api/logout", { method: "POST" });
+  window.location.href = "/login";
+}return { days };
   }, []);
+  async function handleLogout() {
+  await fetch("/api/logout", { method: "POST" });
+  window.location.href = "/login";
+}
 
   const [data, setData] = useState(normalized);
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
