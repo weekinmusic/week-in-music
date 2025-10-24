@@ -1,10 +1,10 @@
+import data from "../data/week.json";
 import WeekInMusicApp from "../components/WeekInMusicApp.jsx";
 
 export default function HomePage() {
   return (
-    <main style={{ padding: 24 }}>
-      <h1 style={{ margin: 0 }}>Week in Music</h1>
-      <WeekInMusicApp />
+    <main className="p-6 max-w-7xl mx-auto">
+      <WeekInMusicApp data={data} editable={false} />
     </main>
   );
 }
