@@ -1,18 +1,17 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 
-const WEEKDAY_LABELS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+// Weekday labels Monday → Sunday
+const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Helper: parse and format times
+// Helpers
 function toWeekIndex(dateStr) {
-  // 0 = Monday ... 6 = Sunday
   const d = new Date(dateStr + "T00:00:00");
-  // JS getDay(): 0=Sun ... 6=Sat. We want Mon=0..Sun=6
-  const js = d.getDay(); // 0..6
-  return js === 0 ? 6 : js - 1;
+  const js = d.getDay(); // 0=Sun..6=Sat
+  return js === 0 ? 6 : js - 1; // Mon=0..Sun=6
 }
-
 function formatTime(hhmm) {
   if (!hhmm) return "";
   const [h, m] = hhmm.split(":").map(Number);
@@ -20,35 +19,40 @@ function formatTime(hhmm) {
   const hr = ((h + 11) % 12) + 1;
   return `${hr}:${String(m ?? 0).padStart(2, "0")} ${ampm}`;
 }
-import Image from "next/image";
+
 export default function WeekInMusicApp() {
-  // Sample seed data — replace with your real shows
+  // Sample data (replace with yours)
   const [events, setEvents] = useState([
     { id: 1, title: "Acoustic Night", venue: "Bluebird Bar", artist: "The Rivets", date: "2025-10-27", time: "19:00", paid: false }, // Mon
-    { id: 2, title: "Open Mic", venue: "The Garage", artist: "House Band", date: "2025-10-29", time: "20:00", paid: true },        // Wed
+    { id: 2, title: "Open Mic", venue: "The Garage", artist: "House Band", date: "2025-10-29", time: "20:00", paid: true },         // Wed
     { id: 3, title: "Friday Jazz", venue: "Ivory Lounge", artist: "Kip Richard Trio", date: "2025-10-31", time: "21:30", paid: true }, // Fri
   ]);
-
   const [form, setForm] = useState({ title: "", venue: "", artist: "", date: "", time: "" });
   const [query, setQuery] = useState("");
+  const [dayFilter, setDayFilter] = useState(null); // null = all days, else 0..6
 
+  // Actions
   const addEvent = () => {
     if (!form.title || !form.venue || !form.date) return;
     const next = { ...form, id: Date.now(), paid: false };
     setEvents((s) => [next, ...s]);
     setForm({ title: "", venue: "", artist: "", date: "", time: "" });
   };
-
   const togglePaid = (id) => setEvents((s) => s.map(e => e.id === id ? { ...e, paid: !e.paid } : e));
   const removeEvent = (id) => setEvents((s) => s.filter(e => e.id !== id));
 
+  // Search + filter
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return events;
-    return events.filter(e =>
-      [e.title, e.venue, e.artist].some(v => (v || "").toLowerCase().includes(q))
-    );
-  }, [events, query]);
+    let list = events;
+    if (q) {
+      list = list.filter(e => [e.title, e.venue, e.artist].some(v => (v || "").toLowerCase().includes(q)));
+    }
+    if (dayFilter !== null) {
+      list = list.filter(e => toWeekIndex(e.date) === dayFilter);
+    }
+    return list;
+  }, [events, query, dayFilter]);
 
   // Group by weekday Mon..Sun
   const grouped = useMemo(() => {
@@ -57,7 +61,6 @@ export default function WeekInMusicApp() {
       const idx = toWeekIndex(ev.date);
       if (idx >= 0 && idx <= 6) buckets[idx].push(ev);
     }
-    // Sort each day by time
     for (const day of buckets) {
       day.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
     }
@@ -66,57 +69,32 @@ export default function WeekInMusicApp() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Hero / Header */}
+      <div className="rounded-2xl bg-gradient-to-br from-wm-leather via-wm-accent to-wm-amber text-white p-5 shadow-soft">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-wm-leather via-wm-accent to-wm-amber shadow-soft flex items-center justify-center">
-            {/* Optional Logo */}
-         import Image from "next/image";
-import { useState } from "react";
-
-function Logo() {
-  const [err, setErr] = useState(false);
-
-  return (
-    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-wm-leather via-wm-accent to-wm-amber shadow-soft flex items-center justify-center">
-      {err ? (
-        <span className="text-white font-extrabold text-xl">W/M</span>
-      ) : (
-        <Image
-          src="/logo.png"
-          alt="Week in Music"
-          width={64}
-          height={64}
-          className="w-12 h-12 object-contain rounded-xl"
-          priority
-          onError={() => setErr(true)}
-        />
-      )}
-    </div>
-  );
-}
-            <span className="text-white font-extrabold text-xl sm:text-2xl sm:hidden">W/M</span>
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
+            {/* Logo if present at /public/logo.png */}
+            <Image
+              src="/logo.png"
+              alt="Week in Music"
+              width={64}
+              height={64}
+              className="w-12 h-12 object-contain rounded-xl"
+              priority
+            />
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold text-wm-ink">Week in Music</h1>
-            <p className="text-sm text-neutral-600">Your weekly guide to live music — venues, artists, and times</p>
+            <h1 className="text-3xl font-extrabold leading-tight">Week in Music</h1>
+            <p className="text-white/85 text-sm">Your weekly guide to live music — venues, artists, and times</p>
           </div>
         </div>
+      </div>
 
-        {/* Search */}
-        <div className="w-full sm:w-80">
-          <input
-            className="w-full border rounded-xl px-3 py-2 bg-white"
-            placeholder="Search by venue, artist, or title"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-      </header>
-
+      {/* Controls */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Add Event + Tips */}
+        {/* Left column */}
         <aside className="space-y-4">
+          {/* Add Event */}
           <section className="bg-white border rounded-2xl shadow-soft p-4">
             <h3 className="text-lg font-semibold mb-3">Add Event</h3>
             <div className="space-y-3">
@@ -134,17 +112,45 @@ function Logo() {
             </div>
           </section>
 
+          {/* Search */}
           <section className="bg-white border rounded-2xl shadow-soft p-4">
-            <h3 className="text-lg font-semibold mb-2">Quick Tips</h3>
+            <h3 className="text-lg font-semibold mb-2">Search</h3>
+            <input className="w-full border rounded-xl px-3 py-2" placeholder="Search venue, artist, or title" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <p className="text-sm mt-2 text-neutral-600">Tip: Try a venue name (e.g., “Bluebird”) or artist.</p>
+          </section>
+
+          {/* Day filter */}
+          <section className="bg-white border rounded-2xl shadow-soft p-4">
+            <h3 className="text-lg font-semibold mb-2">Filter by Day</h3>
+            <div className="grid grid-cols-7 gap-2">
+              {WEEKDAY_LABELS.map((lbl, idx) => (
+                <button
+                  key={lbl}
+                  onClick={() => setDayFilter(dayFilter === idx ? null : idx)}
+                  className={`px-2 py-1 rounded-lg border text-sm ${dayFilter === idx ? "bg-wm-amber text-white border-wm-amber" : "bg-white hover:bg-neutral-50"}`}
+                  title={lbl}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+            {dayFilter !== null && (
+              <button className="mt-3 text-sm underline" onClick={() => setDayFilter(null)}>Clear filter</button>
+            )}
+          </section>
+
+          {/* Tips */}
+          <section className="bg-white border rounded-2xl shadow-soft p-4">
+            <h3 className="text-lg font-semibold mb-2">Brand Settings</h3>
             <ul className="text-sm text-neutral-600 list-disc pl-5 space-y-1">
-              <li>Use the search to filter by venue, artist, or event name.</li>
-              <li>Add your logo at <code>/public/logo.png</code>.</li>
-              <li>Colors are configured in <code>tailwind.config.js</code> under <code>colors.wm.*</code>.</li>
+              <li>Replace <code>/public/logo.png</code> with your logo (same name).</li>
+              <li>Adjust colors in <code>tailwind.config.js</code> under <code>colors.wm</code>.</li>
+              <li>Background set to <code>bg-wm-sand</code> in <code>app/layout.jsx</code>.</li>
             </ul>
           </section>
         </aside>
 
-        {/* Right: Week grid */}
+        {/* Right column: Week grid */}
         <section className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold">This Week</h2>
@@ -166,7 +172,7 @@ function Logo() {
                 ) : (
                   <ul className="space-y-3">
                     {grouped[idx].map((ev) => (
-                      <li key={ev.id} className="border rounded-xl p-3">
+                      <li key={ev.id} className="border rounded-xl p-3 hover:shadow-soft transition">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <div className="font-medium">{ev.title}</div>
