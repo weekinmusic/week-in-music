@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import data from "../data/week.json";
+export default function WeekInMusicApp({ data }) {
+  // everything else stays the same
+}
 import { Clock, Guitar } from "lucide-react";
 
 const DAYS = [
