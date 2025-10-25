@@ -4,6 +4,19 @@ const GH_TOKEN = process.env.GH_TOKEN;
 const GH_REPO = process.env.GH_REPO;
 const GH_FILE_PATH = process.env.GH_FILE_PATH || "data/week.json";
 
+// --- Diagnostic check ---
+if (!GH_TOKEN || !GH_REPO || !GH_FILE_PATH) {
+  console.error("❌ Missing GitHub environment variables:", {
+    GH_TOKEN: !!GH_TOKEN,
+    GH_REPO: GH_REPO,
+    GH_FILE_PATH: GH_FILE_PATH,
+  });
+  return NextResponse.json(
+    { error: "Missing one or more GH_* environment variables" },
+    { status: 500 }
+  );
+}
+
 export async function GET(req) {
   // For “Test GitHub Connection”
   if (!GH_TOKEN || !GH_REPO) {
