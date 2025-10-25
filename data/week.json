@@ -1,25 +1,236 @@
 {
   "days": {
-    "Monday": [],
-    "Tuesday": [],
-    "Wednesday": [],
-    "Thursday": [],
-    "Friday": [
+    "Monday": [
       {
-        "venue": "Ivory Lounge",
-        "venueUrl": "https://ivoryloungedfw.com",
-        "artist": "Kip Richard Trio",
-        "date": "2025-10-31",
-        "time": "21:30"
+        "city": "Stockyards",
+        "venue": "Filthy McNasty’s Saloon",
+        "venueUrl": "https://www.filthymcnastyssaloon.com/",
+        "artist": "Skylar Payne",
+        "time": "21:00",
+        "date": "10-27-25"
       },
       {
-        "venue": "Bluebird Bar",
-        "venueUrl": "https://bluebirdbar.com",
-        "artist": "The Rivets",
-        "date": "2025-10-31",
-        "time": "19:00"
+        "city": "Stockyards",
+        "venue": "White Elephant",
+        "venueUrl": "https://www.whiteelephantsaloon.com/",
+        "artist": "Open Mic",
+        "time": "20:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Stockyards",
+        "venue": "Second Rodeo",
+        "venueUrl": "https://secondrodeobrewing.com/",
+        "artist": "William Johnson",
+        "time": "12:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Stockyards",
+        "venue": "Second Rodeo",
+        "venueUrl": "https://secondrodeobrewing.com/",
+        "artist": "Devin Leigh",
+        "time": "16:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Stockyards",
+        "venue": "Second Rodeo",
+        "venueUrl": "https://secondrodeobrewing.com/",
+        "artist": "Tom Fleischer",
+        "time": "20:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Fort Worth",
+        "venue": "Distribution Bar",
+        "venueUrl": "https://distributionbar.store/",
+        "artist": "Open Jazz Jam with Bobby Falk",
+        "time": "19:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Fort Worth",
+        "venue": "Red Dawg Saloon",
+        "venueUrl": "https://www.facebook.com/groups/565533747114893/",
+        "artist": "Open Jam with James Nored & Will Hancock",
+        "time": "20:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Rendon",
+        "venue": "Hoots Hall",
+        "venueUrl": "https://hootshall.com/",
+        "artist": "Aaron Copeland & Tristan Inman",
+        "time": "20:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Alliance",
+        "venue": "Truck Yard",
+        "venueUrl": "https://truckyard.com/fort-worth/",
+        "artist": "🎶🎶🎶",
+        "time": "18:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Arlington",
+        "venue": "John B’s",
+        "venueUrl": "https://www.facebook.com/p/John-Bs-Food-Spirits-61553955354088/",
+        "artist": "Don Pendley",
+        "time": "19:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Denton",
+        "venue": "Dan’s Silverleaf",
+        "venueUrl": "https://danssilverleaf.com/",
+        "artist": "Open Mic with Justin Collins",
+        "time": "19:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Dallas",
+        "venue": "Balcony Club",
+        "venueUrl": "https://www.balconyclub.com/",
+        "artist": "Bobby Faulk Trio",
+        "time": "20:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Dallas",
+        "venue": "Louie Louie’s Piano Bar",
+        "venueUrl": "https://www.louielouiespianobar.com/",
+        "artist": "Open Blues Jam with CT Davis",
+        "time": "20:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Dallas",
+        "venue": "Truck Yard",
+        "venueUrl": "https://truckyard.com/dallas/",
+        "artist": "🎶🎶🎶",
+        "time": "18:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Dallas",
+        "venue": "Westlake Brewing",
+        "venueUrl": "https://www.westlakebeer.com/",
+        "artist": "Open Mic with Jen Spires",
+        "time": "18:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Deep Elum",
+        "venue": "Adair’s Saloon",
+        "venueUrl": "https://www.adairssaloon.com/",
+        "artist": "Open Mic with Justin Cashion",
+        "time": "21:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Grapevine",
+        "venue": "Tolbert’s Chili Parlor",
+        "venueUrl": "https://tolbertsrestaurant.com/",
+        "artist": "Wade Johnson",
+        "time": "19:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Plano",
+        "venue": "Cafe Bohemia",
+        "venueUrl": "https://www.cafebohemia.net/",
+        "artist": "Open Jam",
+        "time": "19:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "The Colony",
+        "venue": "Truck Yard",
+        "venueUrl": "https://truckyard.com/the-colony/",
+        "artist": "Colton Blue",
+        "time": "18:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Richardson",
+        "venue": "Good Vibes Bar & Grill",
+        "venueUrl": "https://www.goodvibesbarandgrill.com/",
+        "artist": "Holland K Smith & Co",
+        "time": "19:00",
+        "date": "10-27-25"
+      },
+      {
+        "city": "Richardson",
+        "venue": "The String Bean",
+        "venueUrl": "https://www.thestringbean.com/",
+        "artist": "Jimmy Barcus",
+        "time": "18:00",
+        "date": "10-27-25"
       }
     ],
+    "Tuesday": [
+      {
+        "city": "Stockyards",
+        "venue": "Filthy McNasty’s Saloon",
+        "venueUrl": "https://www.filthymcnastyssaloon.com/",
+        "artist": "Brandon Kent",
+        "time": "21:00",
+        "date": "10-28-25"
+      },
+      {
+        "city": "Stockyards",
+        "venue": "White Elephant",
+        "venueUrl": "",
+        "artist": "MYLA",
+        "time": "21:00",
+        "date": "10-28-25"
+      },
+      {
+        "city": "Stockyards",
+        "venue": "Second Rodeo",
+        "venueUrl": "",
+        "artist": "Kirk Holloway",
+        "time": "12:00",
+        "date": "10-28-25"
+      },
+      {
+        "city": "Stockyards",
+        "venue": "Second Rodeo",
+        "venueUrl": "",
+        "artist": "Brett Watts",
+        "time": "16:00",
+        "date": "10-28-25"
+      },
+      {
+        "city": "Stockyards",
+        "venue": "Second Rodeo",
+        "venueUrl": "",
+        "artist": "Justin Collins",
+        "time": "21:00",
+        "date": "10-28-25"
+      },
+      {
+        "city": "Fort Worth",
+        "venue": "Magnolia Motor Lounge",
+        "venueUrl": "",
+        "artist": "Singer/Songwriter Jam with David Tribble",
+        "time": "19:00",
+        "date": "10-28-25"
+      },
+      {
+        "city": "Fort Worth",
+        "venue": "McFly’s Pub",
+        "venueUrl": "",
+        "artist": "Open Mic hosted by Tommy Luke",
+        "time": "19:00",
+        "date": "10-28-25"
+      }
+    ],
+    "Wednesday": [],
+    "Thursday": [],
+    "Friday": [],
     "Saturday": [],
     "Sunday": []
   }
