@@ -10,24 +10,27 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user, pass }),
-      });
-      if (!res.ok) {
-        setError("Invalid credentials");
-        return;
-      }
-      router.push("/admin");
-    } catch (err) {
-      setError("Login failed");
+ async function handleLogin(e) {
+  e.preventDefault();
+  setError("");
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user: user.trim(),   // 👈 trim here too
+        pass: pass.trim(),
+      }),
+    });
+    if (!res.ok) {
+      setError("Invalid credentials");
+      return;
     }
+    router.push("/admin");
+  } catch {
+    setError("Login failed");
   }
+}
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-wm-leather via-wm-accent to-wm-amber p-6">
