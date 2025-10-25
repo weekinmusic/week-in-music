@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_REPO = process.env.GITHUB_REPO;
-const GITHUB_FILE_PATH = process.env.GITHUB_FILE_PATH || "data/week.json";
+const GH_TOKEN = process.env.GH_TOKEN;
+const GH_REPO = process.env.GH_REPO;
+const GH_FILE_PATH = process.env.GH_FILE_PATH || "data/week.json";
 
 export async function GET(req) {
   // For “Test GitHub Connection”
-  if (!GITHUB_TOKEN || !GITHUB_REPO) {
+  if (!GH_TOKEN || !GH_REPO) {
     return NextResponse.json({ error: "Missing GitHub env vars" }, { status: 500 });
   }
 
   const res = await fetch(
-    `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+    `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
     {
-      headers: { Authorization: `token ${GITHUB_TOKEN}` },
+      headers: { Authorization: `token ${GH_TOKEN}` },
     }
   );
 
@@ -27,7 +27,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  if (!GITHUB_TOKEN || !GITHUB_REPO)
+  if (!GH_TOKEN || !GH_REPO)
     return NextResponse.json({ error: "Missing GitHub env vars" }, { status: 500 });
 
   const body = await req.json();
@@ -35,17 +35,17 @@ export async function POST(req) {
 
   // Get current file SHA so GitHub lets us update it
   const get = await fetch(
-    `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
-    { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+    `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
+    { headers: { Authorization: `token ${GH_TOKEN}` } }
   );
   const meta = await get.json();
 
   const res = await fetch(
-    `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+    `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
     {
       method: "PUT",
       headers: {
-        Authorization: `token ${GITHUB_TOKEN}`,
+        Authorization: `token ${GH_TOKEN}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
