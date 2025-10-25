@@ -196,6 +196,7 @@ function csvToWeekJson(csvText) {
   need.forEach(n => { if (idx(n) === -1) throw new Error(`Missing column: ${n}`); });
 
   const iDay = idx("day");
+  const iDate = idx("date");
   const iCity = idx("city");
   const iVenue = idx("venue");
   const iUrl = idx("venueurl"); // optional
@@ -218,7 +219,8 @@ function csvToWeekJson(csvText) {
 
     if (!city || !venue || !artist || !time) continue; // require key fields
 
-    out.days[day].push({ city, venue, venueUrl, artist, time });
+    const date = iDate !== -1 ? (row[iDate] || "").trim() : "";
+out.days[day].push({ city, venue, venueUrl, artist, time, date });
   }
 
   // Optional: sort each day by venue then time
