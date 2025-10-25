@@ -1,5 +1,7 @@
 "use client";
 
+console.log("🎸 WeekInMusicApp received data:", data);
+
 import { useState } from "react";
 export default function WeekInMusicApp({ data }) {
   // everything else stays the same
