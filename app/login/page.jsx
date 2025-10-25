@@ -10,17 +10,18 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
- async function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
   setError("");
+
+  const u = user.trim();
+  const p = pass.trim();
+
   try {
     const res = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user: user.trim(),   // 👈 trim here too
-        pass: pass.trim(),
-      }),
+      body: JSON.stringify({ user: u, pass: p }),
     });
     if (!res.ok) {
       setError("Invalid credentials");
@@ -47,35 +48,46 @@ export default function LoginPage() {
           <p className="text-neutral-600 text-sm mt-1">Sign in to manage listings</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-neutral-700">Username</label>
-            <input
-              type="text"
-              value={user}
-              onChange={(e) => setUser(e.target.value)}
-              className="mt-1 w-full border rounded-xl px-3 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-neutral-700">Password</label>
-            <input
-              type="password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              className="mt-1 w-full border rounded-xl px-3 py-2"
-              required
-            />
-          </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-          <button
-            type="submit"
-            className="w-full bg-wm-ink text-white py-2 rounded-xl hover:opacity-90 transition"
-          >
-            Sign In
-          </button>
-        </form>
+<form onSubmit={handleLogin} className="space-y-4">
+  <div>
+    <label className="block text-sm font-medium text-neutral-700">Username</label>
+    <input
+      type="text"
+      name="username"
+      autoComplete="username"
+      spellCheck={false}
+      value={user}
+      onChange={(e) => setUser(e.target.value)}
+      onBlur={(e) => setUser(e.target.value.trim())}
+      className="mt-1 w-full border rounded-xl px-3 py-2"
+      required
+    />
+  </div>
+
+  <div>
+    <label className="block text-sm font-medium text-neutral-700">Password</label>
+    <input
+      type="password"
+      name="password"
+      autoComplete="current-password"
+      value={pass}
+      onChange={(e) => setPass(e.target.value)}
+      onBlur={(e) => setPass(e.target.value.trim())}
+      className="mt-1 w-full border rounded-xl px-3 py-2"
+      required
+    />
+  </div>
+
+  {/* optional: show the error */}
+  {error && <p className="text-red-600 text-sm">{error}</p>}
+
+  <button
+    type="submit"
+    className="w-full bg-wm-ink text-white py-2 rounded-xl hover:opacity-90 transition"
+  >
+    Sign In
+  </button>
+</form>
 
         <footer className="text-center text-xs text-neutral-500">
           © {new Date().getFullYear()} Week in Music
